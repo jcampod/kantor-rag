@@ -23,14 +23,18 @@ index, groq_client = init_clients()
 st.title("📚 J.R. Kantor Research System")
 st.markdown("Search through Kantor's complete works on interbehavioral psychology")
 
-# Sidebar
+# Sidebar with debug
 with st.sidebar:
     st.markdown("### About")
     st.markdown("This system searches through J.R. Kantor's complete academic works on interbehavioral psychology.")
-    st.markdown("### Collection")
-    st.markdown("- 130 documents indexed")
-    st.markdown("- Books, articles, and reviews")
-    st.markdown("- Years: 1915-1984")
+    
+    # Show index stats to debug
+    st.markdown("### Index Stats")
+    try:
+        stats = index.describe_index_stats()
+        st.json(stats.to_dict())
+    except Exception as e:
+        st.write(f"Error: {e}")
 
 # Search input
 query = st.text_input(
@@ -42,15 +46,31 @@ if st.button("🔍 Search", type="primary") or query:
     if query:
         with st.spinner("Searching..."):
             try:
-                # Search with correct namespace
+                # Get stats to find correct namespace
+                stats = index.describe_index_stats()
+                namespaces = stats.namespaces
+                st.write("Available namespaces:", list(namespaces.keys()))
+                
+                # Try default namespace first
+                namespace_to_use = "__default__"
+                if "" in namespaces:
+                    namespace_to_use = ""
+                elif "default" in namespaces:
+                    namespace_to_use = "default"
+                
+                st.write(f"Using namespace: '{namespace_to_use}'")
+                
+                # Search
                 results = index.search(
-                    namespace="__default__",
+                    namespace=namespace_to_use if namespace_to_use else "__default__",
                     query={
                         "inputs": {"text": query},
                         "top_k": 5
                     },
                     fields=["text", "filename", "page"]
                 )
+                
+                st.write("Raw results:", results)
                 
                 # Build context
                 context = ""
@@ -85,7 +105,6 @@ if st.button("🔍 Search", type="primary") or query:
                     
                     answer = response.choices[0].message.content
                     
-                    # Display answer
                     st.markdown("### Answer")
                     st.write(answer)
                 else:
@@ -103,3 +122,5 @@ if st.button("🔍 Search", type="primary") or query:
                     
             except Exception as e:
                 st.error(f"Search error: {str(e)}")
+                import traceback
+                st.code(traceback.format_exc())
