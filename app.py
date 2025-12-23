@@ -23,7 +23,7 @@ index, groq_client = init_clients()
 st.title("📚 J.R. Kantor Research System")
 st.markdown("Search through Kantor's complete works on interbehavioral psychology")
 
-# Debug: Show index stats
+# Sidebar
 with st.sidebar:
     st.markdown("### About")
     st.markdown("This system searches through J.R. Kantor's complete academic works on interbehavioral psychology.")
@@ -31,14 +31,6 @@ with st.sidebar:
     st.markdown("- 130 documents indexed")
     st.markdown("- Books, articles, and reviews")
     st.markdown("- Years: 1915-1984")
-    
-    # Debug info
-    with st.expander("Debug Info"):
-        try:
-            stats = index.describe_index_stats()
-            st.write("Index stats:", stats)
-        except Exception as e:
-            st.write("Stats error:", str(e))
 
 # Search input
 query = st.text_input(
@@ -50,17 +42,15 @@ if st.button("🔍 Search", type="primary") or query:
     if query:
         with st.spinner("Searching..."):
             try:
-                # Try inference-enabled search
+                # Search with correct namespace
                 results = index.search(
-                    namespace="",
+                    namespace="__default__",
                     query={
                         "inputs": {"text": query},
                         "top_k": 5
                     },
                     fields=["text", "filename", "page"]
                 )
-                
-                st.write("DEBUG - Raw results:", results)
                 
                 # Build context
                 context = ""
@@ -76,9 +66,6 @@ if st.button("🔍 Search", type="primary") or query:
                             "page": fields.get("page", "?"),
                             "score": match.get("_score", 0)
                         })
-                
-                if not sources:
-                    st.warning("No documents retrieved. Check index configuration.")
                 
                 # Generate response only if we have context
                 if context.strip():
@@ -116,4 +103,3 @@ if st.button("🔍 Search", type="primary") or query:
                     
             except Exception as e:
                 st.error(f"Search error: {str(e)}")
-                st.write("Full error:", e)
