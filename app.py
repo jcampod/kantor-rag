@@ -23,6 +23,23 @@ index, groq_client = init_clients()
 st.title("📚 J.R. Kantor Research System")
 st.markdown("Search through Kantor's complete works on interbehavioral psychology")
 
+# Debug: Show index stats
+with st.sidebar:
+    st.markdown("### About")
+    st.markdown("This system searches through J.R. Kantor's complete academic works on interbehavioral psychology.")
+    st.markdown("### Collection")
+    st.markdown("- 130 documents indexed")
+    st.markdown("- Books, articles, and reviews")
+    st.markdown("- Years: 1915-1984")
+    
+    # Debug info
+    with st.expander("Debug Info"):
+        try:
+            stats = index.describe_index_stats()
+            st.write("Index stats:", stats)
+        except Exception as e:
+            st.write("Stats error:", str(e))
+
 # Search input
 query = st.text_input(
     "Ask a question about Kantor's work:",
@@ -32,58 +49,71 @@ query = st.text_input(
 if st.button("🔍 Search", type="primary") or query:
     if query:
         with st.spinner("Searching..."):
-            # Search Pinecone using query method with integrated inference
-            results = index.query(
-                namespace="",
-                data=query,
-                top_k=5,
-                include_metadata=True
-            )
-            
-            # Build context
-            context = ""
-            sources = []
-            for match in results.matches:
-                text = match.metadata.get("text", "")
-                context += f"\n{text}\n"
-                sources.append({
-                    "file": match.metadata.get("filename", "Unknown"),
-                    "page": match.metadata.get("page", "?"),
-                    "score": match.score
-                })
-            
-            # Generate response
-            response = groq_client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
-                messages=[
-                    {
-                        "role": "system",
-                        "content": "You are a scholar specializing in J.R. Kantor's interbehavioral psychology. Answer based ONLY on the provided context. Always cite the source documents. If the context doesn't contain relevant information, say so."
+            try:
+                # Try inference-enabled search
+                results = index.search(
+                    namespace="",
+                    query={
+                        "inputs": {"text": query},
+                        "top_k": 5
                     },
-                    {
-                        "role": "user",
-                        "content": f"Context:\n{context}\n\nQuestion: {query}"
-                    }
-                ]
-            )
-            
-            answer = response.choices[0].message.content
-            
-            # Display answer
-            st.markdown("### Answer")
-            st.write(answer)
-            
-            # Display sources
-            st.markdown("### Sources")
-            for i, s in enumerate(sources, 1):
-                with st.expander(f"{i}. {s['file']} (p. {s['page']})"):
-                    st.write(f"Relevance score: {s['score']:.3f}")
-
-# Sidebar
-with st.sidebar:
-    st.markdown("### About")
-    st.markdown("This system searches through J.R. Kantor's complete academic works on interbehavioral psychology.")
-    st.markdown("### Collection")
-    st.markdown("- 130 documents indexed")
-    st.markdown("- Books, articles, and reviews")
-    st.markdown("- Years: 1915-1984")
+                    fields=["text", "filename", "page"]
+                )
+                
+                st.write("DEBUG - Raw results:", results)
+                
+                # Build context
+                context = ""
+                sources = []
+                
+                if "result" in results and "hits" in results["result"]:
+                    for match in results["result"]["hits"]:
+                        fields = match.get("fields", {})
+                        text = fields.get("text", "")
+                        context += f"\n{text}\n"
+                        sources.append({
+                            "file": fields.get("filename", "Unknown"),
+                            "page": fields.get("page", "?"),
+                            "score": match.get("_score", 0)
+                        })
+                
+                if not sources:
+                    st.warning("No documents retrieved. Check index configuration.")
+                
+                # Generate response only if we have context
+                if context.strip():
+                    response = groq_client.chat.completions.create(
+                        model="llama-3.3-70b-versatile",
+                        messages=[
+                            {
+                                "role": "system",
+                                "content": "You are a scholar specializing in J.R. Kantor's interbehavioral psychology. Answer based ONLY on the provided context. Always cite the source documents. If the context doesn't contain relevant information, say so."
+                            },
+                            {
+                                "role": "user",
+                                "content": f"Context:\n{context}\n\nQuestion: {query}"
+                            }
+                        ]
+                    )
+                    
+                    answer = response.choices[0].message.content
+                    
+                    # Display answer
+                    st.markdown("### Answer")
+                    st.write(answer)
+                else:
+                    st.markdown("### Answer")
+                    st.write("No relevant documents found in the index.")
+                
+                # Display sources
+                st.markdown("### Sources")
+                if sources:
+                    for i, s in enumerate(sources, 1):
+                        with st.expander(f"{i}. {s['file']} (p. {s['page']})"):
+                            st.write(f"Relevance score: {s['score']:.3f}")
+                else:
+                    st.write("No sources found.")
+                    
+            except Exception as e:
+                st.error(f"Search error: {str(e)}")
+                st.write("Full error:", e)
