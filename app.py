@@ -32,21 +32,24 @@ query = st.text_input(
 if st.button("🔍 Search", type="primary") or query:
     if query:
         with st.spinner("Searching..."):
-            # Search Pinecone
-            results = index.search(
-                namespace="default",
-                query={"top_k": 5, "inputs": {"text": query}}
+            # Search Pinecone using query method with integrated inference
+            results = index.query(
+                namespace="",
+                data=query,
+                top_k=5,
+                include_metadata=True
             )
             
             # Build context
             context = ""
             sources = []
-            for match in results["result"]["hits"]:
-                context += f"\n{match['fields']['text']}\n"
+            for match in results.matches:
+                text = match.metadata.get("text", "")
+                context += f"\n{text}\n"
                 sources.append({
-                    "file": match["fields"]["filename"],
-                    "page": match["fields"]["page"],
-                    "score": match["_score"]
+                    "file": match.metadata.get("filename", "Unknown"),
+                    "page": match.metadata.get("page", "?"),
+                    "score": match.score
                 })
             
             # Generate response
