@@ -1,6 +1,7 @@
 import streamlit as st
 from pinecone import Pinecone
 from groq import Groq
+from sentence_transformers import SentenceTransformer
 
 # Page config
 st.set_page_config(
@@ -15,26 +16,23 @@ def init_clients():
     pc = Pinecone(api_key=st.secrets["PINECONE_API_KEY"])
     index = pc.Index("kantor-rag")
     groq_client = Groq(api_key=st.secrets["GROQ_API_KEY"])
-    return index, groq_client
+    model = SentenceTransformer('all-MiniLM-L6-v2')
+    return index, groq_client, model
 
-index, groq_client = init_clients()
+index, groq_client, model = init_clients()
 
 # Main UI
 st.title("📚 J.R. Kantor Research System")
 st.markdown("Search through Kantor's complete works on interbehavioral psychology")
 
-# Sidebar with debug
+# Sidebar
 with st.sidebar:
     st.markdown("### About")
     st.markdown("This system searches through J.R. Kantor's complete academic works on interbehavioral psychology.")
-    
-    # Show index stats to debug
-    st.markdown("### Index Stats")
-    try:
-        stats = index.describe_index_stats()
-        st.json(stats.to_dict())
-    except Exception as e:
-        st.write(f"Error: {e}")
+    st.markdown("### Collection")
+    st.markdown("- 130 documents indexed")
+    st.markdown("- Books, articles, and reviews")
+    st.markdown("- Years: 1915-1984")
 
 # Search input
 query = st.text_input(
@@ -46,46 +44,29 @@ if st.button("🔍 Search", type="primary") or query:
     if query:
         with st.spinner("Searching..."):
             try:
-                # Get stats to find correct namespace
-                stats = index.describe_index_stats()
-                namespaces = stats.namespaces
-                st.write("Available namespaces:", list(namespaces.keys()))
+                # Generate query embedding with HuggingFace
+                query_embedding = model.encode(query).tolist()
                 
-                # Try default namespace first
-                namespace_to_use = "__default__"
-                if "" in namespaces:
-                    namespace_to_use = ""
-                elif "default" in namespaces:
-                    namespace_to_use = "default"
-                
-                st.write(f"Using namespace: '{namespace_to_use}'")
-                
-                # Search
-                results = index.search(
-                    namespace=namespace_to_use if namespace_to_use else "__default__",
-                    query={
-                        "inputs": {"text": query},
-                        "top_k": 5
-                    },
-                    fields=["text", "filename", "page"]
+                # Search Pinecone with vector
+                results = index.query(
+                    namespace="default",
+                    vector=query_embedding,
+                    top_k=5,
+                    include_metadata=True
                 )
-                
-                st.write("Raw results:", results)
                 
                 # Build context
                 context = ""
                 sources = []
                 
-                if "result" in results and "hits" in results["result"]:
-                    for match in results["result"]["hits"]:
-                        fields = match.get("fields", {})
-                        text = fields.get("text", "")
-                        context += f"\n{text}\n"
-                        sources.append({
-                            "file": fields.get("filename", "Unknown"),
-                            "page": fields.get("page", "?"),
-                            "score": match.get("_score", 0)
-                        })
+                for match in results.matches:
+                    text = match.metadata.get("text", "")
+                    context += f"\n{text}\n"
+                    sources.append({
+                        "file": match.metadata.get("filename", "Unknown"),
+                        "page": match.metadata.get("page", "?"),
+                        "score": match.score
+                    })
                 
                 # Generate response only if we have context
                 if context.strip():
@@ -122,5 +103,3 @@ if st.button("🔍 Search", type="primary") or query:
                     
             except Exception as e:
                 st.error(f"Search error: {str(e)}")
-                import traceback
-                st.code(traceback.format_exc())
