@@ -10,7 +10,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Custom CSS - BLACK color scheme with image on right
+# Custom CSS - BLACK color scheme
 st.markdown("""
 <style>
     /* Hide Streamlit branding */
@@ -58,6 +58,7 @@ st.markdown("""
         height: 110px;
         border-radius: 50%;
         object-fit: cover;
+        object-position: center top;
         border: 3px solid rgba(255,255,255,0.3);
         margin-left: 2rem;
     }
@@ -114,9 +115,13 @@ st.markdown("""
         overflow-y: auto;
     }
     
-    /* Sidebar */
-    section[data-testid="stSidebar"] > div {
+    /* Filter box */
+    .filter-section {
         background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -279,45 +284,37 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# Sidebar with filters
-with st.sidebar:
-    st.markdown("### 🔎 Filters")
-    
-    # Document type filter
+# FILTERS in main area
+st.markdown("**🔎 Filters** (optional)")
+filter_col1, filter_col2 = st.columns(2)
+
+with filter_col1:
     doc_type = st.selectbox(
         "Document Type",
         ["All Types", "Books", "Articles", "Reviews"],
-        index=0
+        index=0,
+        label_visibility="collapsed"
     )
-    
-    # Title filter (dependent on type)
+
+with filter_col2:
     if doc_type != "All Types":
-        titles = sorted(DOCUMENT_CATALOG.get(doc_type, []))
+        titles = ["All " + doc_type] + sorted(DOCUMENT_CATALOG.get(doc_type, []))
         title_filter = st.selectbox(
             "Specific Document",
-            ["All " + doc_type] + titles,
-            index=0
+            titles,
+            index=0,
+            label_visibility="collapsed"
         )
     else:
-        title_filter = None
-    
-    st.markdown("---")
-    
-    st.markdown("### About")
-    st.markdown("""
-    Access J.R. Kantor's complete academic bibliography 
-    on interbehavioral psychology.
-    """)
-    
-    st.markdown("---")
-    
-    st.markdown("### Collection")
-    st.markdown("""
-    - **20** Books  
-    - **91** Articles
-    - **21** Reviews
-    - **1915 - 1984**
-    """)
+        title_filter = st.selectbox(
+            "Specific Document",
+            ["Select a type first"],
+            index=0,
+            disabled=True,
+            label_visibility="collapsed"
+        )
+
+st.markdown("---")
 
 # Example questions
 st.markdown("**Try an example:**")
@@ -362,7 +359,7 @@ if search_clicked or (query and example_clicked):
                 pinecone_filter = None
                 if doc_type != "All Types":
                     pinecone_filter = {"type": {"$eq": doc_type}}
-                    if title_filter and not title_filter.startswith("All "):
+                    if title_filter and not title_filter.startswith("All ") and title_filter != "Select a type first":
                         pinecone_filter = {
                             "$and": [
                                 {"type": {"$eq": doc_type}},
@@ -482,3 +479,7 @@ SOURCES:
                     
             except Exception as e:
                 st.error(f"An error occurred: {str(e)}")
+
+# Footer info
+st.markdown("---")
+st.caption("Collection: 20 Books • 91 Articles • 21 Reviews • Years: 1915-1984")
