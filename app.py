@@ -13,7 +13,6 @@ st.set_page_config(
 
 # Image URLs from GitHub
 IMAGE_URL = "https://raw.githubusercontent.com/jcampod/kantor-rag/main/kantor.png"
-SEARCH_ICON_URL = "https://raw.githubusercontent.com/jcampod/kantor-rag/main/search.png"
 
 # Custom CSS - Professional academic design with RED theme
 st.markdown(f"""
@@ -89,32 +88,29 @@ st.markdown(f"""
         margin-left: 1.5rem;
     }}
     
-    /* Search box container */
-    .search-wrapper {{
-        position: relative;
-        margin-bottom: 1rem;
-    }}
-    
-    /* Search input styling */
+    /* Search input styling - WHITE background */
     .stTextInput > div > div > input {{
         border: 2px solid #ddd;
         border-radius: 25px;
-        padding: 0.8rem 3.5rem 0.8rem 1.2rem;
+        padding: 0.8rem 1.2rem;
         font-family: 'Georgia', serif;
         font-size: 1rem;
         width: 100%;
+        background-color: #ffffff !important;
+    }}
+    
+    .stTextInput > div > div {{
+        background-color: transparent !important;
+    }}
+    
+    .stTextInput > div {{
+        background-color: transparent !important;
     }}
     
     .stTextInput > div > div > input:focus {{
         border-color: #b8232f;
         box-shadow: 0 0 0 2px rgba(184, 35, 47, 0.15);
-    }}
-    
-    /* Hide the search button column visually but keep functionality */
-    .search-btn-col button {{
-        background: transparent !important;
-        border: none !important;
-        padding: 0 !important;
+        background-color: #ffffff !important;
     }}
     
     /* Button styling - RED theme */
@@ -138,12 +134,6 @@ st.markdown(f"""
     
     .stButton > button p {{
         color: white !important;
-    }}
-    
-    /* Search icon inside button */
-    .search-icon-btn {{
-        width: 24px;
-        height: 24px;
     }}
     
     /* Answer section with RED accent */
@@ -200,11 +190,23 @@ st.markdown(f"""
         font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     }}
     
-    /* Download button */
+    /* Download button - WHITE text */
     .stDownloadButton > button {{
         background-color: #b8232f !important;
         color: white !important;
         border-radius: 4px;
+    }}
+    
+    .stDownloadButton > button span {{
+        color: white !important;
+    }}
+    
+    .stDownloadButton > button p {{
+        color: white !important;
+    }}
+    
+    .stDownloadButton > button div {{
+        color: white !important;
     }}
 </style>
 """, unsafe_allow_html=True)
@@ -364,7 +366,7 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# Search input with custom icon button
+# Search input with button
 search_col, btn_col = st.columns([8, 1])
 
 with search_col:
@@ -375,7 +377,7 @@ with search_col:
     )
 
 with btn_col:
-    search_clicked = st.button("⌕", help="Search", use_container_width=True)
+    search_clicked = st.button("🔍", help="Search", use_container_width=True)
 
 # Filters BELOW search
 st.markdown('<p class="filter-label">Filters (optional)</p>', unsafe_allow_html=True)
@@ -409,7 +411,7 @@ with filter_col2:
 
 st.markdown("---")
 
-# Also trigger search on Enter key
+# Trigger search on button click or Enter key
 if (search_clicked or query) and query:
     with st.spinner("Searching..."):
         try:
