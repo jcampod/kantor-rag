@@ -2,7 +2,6 @@ import streamlit as st
 from pinecone import Pinecone
 from groq import Groq
 from sentence_transformers import SentenceTransformer
-import base64
 
 # Page config
 st.set_page_config(
@@ -11,7 +10,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Custom CSS - BLACK color scheme
+# Custom CSS - BLACK color scheme with image on right
 st.markdown("""
 <style>
     /* Hide Streamlit branding */
@@ -25,7 +24,7 @@ st.markdown("""
         max-width: 950px;
     }
     
-    /* Custom header with image */
+    /* Custom header with image on RIGHT */
     .custom-header {
         background: linear-gradient(135deg, #1a1a1a 0%, #333333 100%);
         padding: 2rem;
@@ -34,15 +33,11 @@ st.markdown("""
         color: white;
         display: flex;
         align-items: center;
-        gap: 2rem;
+        justify-content: space-between;
     }
     
-    .header-image {
-        width: 100px;
-        height: 100px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 3px solid rgba(255,255,255,0.3);
+    .header-text {
+        flex: 1;
     }
     
     .header-text h1 {
@@ -56,6 +51,15 @@ st.markdown("""
         margin: 0.5rem 0 0 0;
         opacity: 0.9;
         font-size: 1rem;
+    }
+    
+    .header-image {
+        width: 110px;
+        height: 110px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid rgba(255,255,255,0.3);
+        margin-left: 2rem;
     }
     
     /* Search input styling */
@@ -110,28 +114,6 @@ st.markdown("""
         overflow-y: auto;
     }
     
-    /* Source header */
-    .source-header {
-        font-weight: 600;
-        color: #1a1a1a;
-        margin-bottom: 0.5rem;
-    }
-    
-    /* Example questions */
-    .example-btn {
-        background: #f1f5f9;
-        border: 1px solid #e2e8f0;
-        border-radius: 20px;
-        padding: 0.5rem 1rem;
-        font-size: 0.85rem;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-    
-    .example-btn:hover {
-        background: #e2e8f0;
-    }
-    
     /* Sidebar */
     section[data-testid="stSidebar"] > div {
         background: #f8fafc;
@@ -150,37 +132,19 @@ def init_clients():
 
 index, groq_client, model = init_clients()
 
-# Load and encode image
-@st.cache_data
-def get_image_base64():
-    try:
-        with open("kantor.png", "rb") as f:
-            return base64.b64encode(f.read()).decode()
-    except:
-        return None
+# Image URL from GitHub
+IMAGE_URL = "https://raw.githubusercontent.com/jcampod/kantor-rag/main/kantor.png"
 
-img_base64 = get_image_base64()
-
-# Custom header with image
-if img_base64:
-    st.markdown(f"""
-    <div class="custom-header">
-        <img src="data:image/png;base64,{img_base64}" class="header-image">
-        <div class="header-text">
-            <h1>J.R. Kantor Research System</h1>
-            <p>Search through Kantor's complete works on interbehavioral psychology</p>
-        </div>
+# Custom header with image on RIGHT
+st.markdown(f"""
+<div class="custom-header">
+    <div class="header-text">
+        <h1>J.R. Kantor Research System</h1>
+        <p>Search through Kantor's complete works on interbehavioral psychology</p>
     </div>
-    """, unsafe_allow_html=True)
-else:
-    st.markdown("""
-    <div class="custom-header">
-        <div class="header-text">
-            <h1>J.R. Kantor Research System</h1>
-            <p>Search through Kantor's complete works on interbehavioral psychology</p>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    <img src="{IMAGE_URL}" class="header-image">
+</div>
+""", unsafe_allow_html=True)
 
 # Sidebar
 with st.sidebar:
