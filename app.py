@@ -21,7 +21,7 @@ st.markdown("""
     /* Main container */
     .main .block-container {
         padding-top: 2rem;
-        max-width: 900px;
+        max-width: 950px;
     }
     
     /* Custom header */
@@ -86,17 +86,27 @@ st.markdown("""
         margin: 1rem 0;
     }
     
-    /* Source expanders */
-    .streamlit-expanderHeader {
-        background: #f1f5f9;
+    /* Source text preview */
+    .source-text {
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
         border-radius: 6px;
+        padding: 1rem;
+        font-size: 0.9rem;
+        line-height: 1.6;
+        color: #333;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+    
+    /* Source header */
+    .source-header {
+        font-weight: 600;
+        color: #1a365d;
+        margin-bottom: 0.5rem;
     }
     
     /* Sidebar */
-    .css-1d391kg {
-        background: #f8fafc;
-    }
-    
     section[data-testid="stSidebar"] > div {
         background: #f8fafc;
     }
@@ -147,6 +157,7 @@ with st.sidebar:
     2. Click **Search**
     3. Review the AI-generated answer
     4. Explore source documents
+    5. Download results if needed
     """)
 
 # Search input
@@ -168,35 +179,54 @@ if search_clicked or query:
                 # Generate query embedding
                 query_embedding = model.encode(query).tolist()
                 
-                # Search Pinecone
+                # Search Pinecone - now 10 results
                 results = index.query(
                     namespace="default",
                     vector=query_embedding,
-                    top_k=5,
+                    top_k=10,
                     include_metadata=True
                 )
                 
-                # Build context
+                # Build context and sources list
                 context = ""
                 sources = []
+                source_references = ""
                 
-                for match in results.matches:
+                for i, match in enumerate(results.matches, 1):
                     text = match.metadata.get("text", "")
-                    context += f"\n{text}\n"
+                    filename = match.metadata.get("filename", "Unknown")
+                    page = match.metadata.get("page", "?")
+                    
+                    # Build context with source markers
+                    context += f"\n[Source {i}: {filename}, p.{page}]\n{text}\n"
+                    
+                    # Build source reference list
+                    source_references += f"- Source {i}: {filename}, page {page}\n"
+                    
                     sources.append({
-                        "file": match.metadata.get("filename", "Unknown"),
-                        "page": match.metadata.get("page", "?"),
-                        "score": match.score
+                        "num": i,
+                        "file": filename,
+                        "page": page,
+                        "score": match.score,
+                        "text": text
                     })
                 
-                # Generate response
+                # Generate response with explicit source references
                 if context.strip():
                     response = groq_client.chat.completions.create(
                         model="llama-3.3-70b-versatile",
                         messages=[
                             {
                                 "role": "system",
-                                "content": "You are a scholar specializing in J.R. Kantor's interbehavioral psychology. Answer based ONLY on the provided context. Always cite the source documents. If the context doesn't contain relevant information, say so."
+                                "content": f"""You are a scholar specializing in J.R. Kantor's interbehavioral psychology. 
+Answer based ONLY on the provided context. 
+When citing, use the format [Source X] to reference specific sources.
+
+Available sources:
+{source_references}
+
+Always cite which source(s) your information comes from using [Source X] notation.
+If the context doesn't contain relevant information, say so."""
                             },
                             {
                                 "role": "user",
@@ -207,17 +237,54 @@ if search_clicked or query:
                     
                     answer = response.choices[0].message.content
                     
+                    # Store results for download
+                    st.session_state['last_query'] = query
+                    st.session_state['last_answer'] = answer
+                    st.session_state['last_sources'] = sources
+                    
+                    # Display answer
                     st.markdown("### Answer")
                     st.markdown(f'<div class="answer-box">{answer}</div>', unsafe_allow_html=True)
+                    
+                    # Download/Copy buttons
+                    st.markdown("---")
+                    col_a, col_b, col_c = st.columns([1, 1, 2])
+                    
+                    # Prepare download content
+                    download_text = f"""QUERY: {query}
+
+ANSWER:
+{answer}
+
+SOURCES:
+"""
+                    for s in sources:
+                        download_text += f"\n{'='*60}\nSource {s['num']}: {s['file']} — Page {s['page']}\nRelevance: {s['score']:.1%}\n{'='*60}\n{s['text']}\n"
+                    
+                    with col_a:
+                        st.download_button(
+                            label="Download Results",
+                            data=download_text,
+                            file_name=f"kantor_search_{query[:30].replace(' ', '_')}.txt",
+                            mime="text/plain"
+                        )
+                    
+                    with col_b:
+                        if st.button("Copy Answer"):
+                            st.code(answer, language=None)
+                            st.caption("Select and copy the text above")
+                    
                 else:
                     st.warning("No relevant documents found for this query.")
                 
-                # Display sources
+                # Display sources with text preview
                 if sources:
                     st.markdown("### Sources")
-                    for i, s in enumerate(sources, 1):
-                        with st.expander(f"{i}. {s['file']} — Page {s['page']}"):
-                            st.caption(f"Relevance: {s['score']:.1%}")
+                    st.caption("Click on each source to view the retrieved text")
+                    
+                    for s in sources:
+                        with st.expander(f"Source {s['num']}: {s['file']} — Page {s['page']} ({s['score']:.1%} relevance)"):
+                            st.markdown(f'<div class="source-text">{s["text"]}</div>', unsafe_allow_html=True)
                     
             except Exception as e:
                 st.error(f"An error occurred: {str(e)}")
