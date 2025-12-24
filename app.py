@@ -6,122 +6,155 @@ from sentence_transformers import SentenceTransformer
 # Page config
 st.set_page_config(
     page_title="J.R. Kantor Research System",
-    page_icon="🔬",
-    layout="wide"
+    page_icon="📖",
+    layout="centered",
+    initial_sidebar_state="collapsed"
 )
 
-# Custom CSS - BLACK color scheme
+# Custom CSS - Professional academic design
 st.markdown("""
 <style>
     /* Hide Streamlit branding */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
+    .stDeployButton {display: none;}
     
-    /* Main container */
-    .main .block-container {
-        padding-top: 2rem;
-        max-width: 950px;
+    /* Main container - cleaner padding for embed */
+    .block-container {
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+        padding-left: 2rem;
+        padding-right: 2rem;
+        max-width: 900px;
+    }
+    
+    /* Academic Typography */
+    h1, h2, h3 {
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        color: #111111;
+        font-weight: 600;
+    }
+    
+    p, div, label, span {
+        font-family: 'Georgia', serif;
+        color: #333333;
+        line-height: 1.6;
     }
     
     /* Custom header with image on RIGHT */
     .custom-header {
-        background: linear-gradient(135deg, #1a1a1a 0%, #333333 100%);
-        padding: 2rem;
-        border-radius: 10px;
-        margin-bottom: 2rem;
+        background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+        padding: 1.5rem 2rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
         color: white;
         display: flex;
         align-items: center;
         justify-content: space-between;
     }
     
-    .header-text {
-        flex: 1;
-    }
-    
     .header-text h1 {
         margin: 0;
-        font-size: 1.8rem;
+        font-size: 1.6rem;
         font-weight: 600;
-        letter-spacing: 0.5px;
+        color: white;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     }
     
     .header-text p {
-        margin: 0.5rem 0 0 0;
-        opacity: 0.9;
-        font-size: 1rem;
+        margin: 0.4rem 0 0 0;
+        opacity: 0.85;
+        font-size: 0.95rem;
+        color: white;
+        font-family: 'Georgia', serif;
     }
     
     .header-image {
-        width: 110px;
-        height: 110px;
+        width: 90px;
+        height: 90px;
         border-radius: 50%;
         object-fit: cover;
         object-position: center top;
-        border: 3px solid rgba(255,255,255,0.3);
-        margin-left: 2rem;
+        border: 2px solid rgba(255,255,255,0.3);
+        margin-left: 1.5rem;
     }
     
     /* Search input styling */
     .stTextInput > div > div > input {
-        border-radius: 8px;
-        border: 2px solid #e2e8f0;
-        padding: 0.75rem 1rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 0.6rem 1rem;
+        font-family: 'Georgia', serif;
         font-size: 1rem;
     }
     
     .stTextInput > div > div > input:focus {
         border-color: #333;
-        box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
     }
     
-    /* Button styling - BLACK */
+    /* Button styling - Professional black */
     .stButton > button {
-        background: linear-gradient(135deg, #333333 0%, #1a1a1a 100%);
+        background-color: #333333;
         color: white;
         border: none;
-        border-radius: 8px;
-        padding: 0.6rem 2rem;
-        font-weight: 500;
-        font-size: 1rem;
-        transition: all 0.2s ease;
+        border-radius: 4px;
+        padding: 0.5rem 1.5rem;
+        font-weight: 600;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        transition: background-color 0.2s ease;
     }
     
     .stButton > button:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        background-color: #555555;
+        color: white;
+        border: none;
     }
     
     /* Answer section */
     .answer-box {
-        background: #f8fafc;
-        border-left: 4px solid #333;
-        padding: 1.5rem;
-        border-radius: 0 8px 8px 0;
+        background: #fafafa;
+        border-left: 3px solid #333;
+        padding: 1.25rem;
+        border-radius: 0 4px 4px 0;
         margin: 1rem 0;
+        font-family: 'Georgia', serif;
+        line-height: 1.7;
     }
     
     /* Source text preview */
     .source-text {
         background: #f8f9fa;
         border: 1px solid #e9ecef;
-        border-radius: 6px;
+        border-radius: 4px;
         padding: 1rem;
         font-size: 0.9rem;
+        font-family: 'Georgia', serif;
         line-height: 1.6;
         color: #333;
-        max-height: 300px;
+        max-height: 280px;
         overflow-y: auto;
     }
     
-    /* Filter box */
-    .filter-section {
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
-        border-radius: 8px;
-        padding: 1rem;
-        margin-bottom: 1rem;
+    /* Select boxes */
+    .stSelectbox > div > div {
+        font-family: 'Georgia', serif;
+    }
+    
+    /* Expander styling */
+    .streamlit-expanderHeader {
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        font-size: 0.95rem;
+    }
+    
+    /* Footer caption */
+    .footer-caption {
+        text-align: center;
+        color: #888;
+        font-size: 0.85rem;
+        margin-top: 1rem;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -137,7 +170,7 @@ def init_clients():
 
 index, groq_client, model = init_clients()
 
-# Document catalog - all titles per type
+# Document catalog
 DOCUMENT_CATALOG = {
     "Books": [
         "A Survey of the Science of Psyc - J. R. Kantor",
@@ -284,8 +317,8 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# FILTERS in main area
-st.markdown("**🔎 Filters** (optional)")
+# Filters
+st.markdown("**Filters** *(optional)*")
 filter_col1, filter_col2 = st.columns(2)
 
 with filter_col1:
@@ -308,7 +341,7 @@ with filter_col2:
     else:
         title_filter = st.selectbox(
             "Specific Document",
-            ["Select a type first"],
+            ["Select type first"],
             index=0,
             disabled=True,
             label_visibility="collapsed"
@@ -317,7 +350,7 @@ with filter_col2:
 st.markdown("---")
 
 # Example questions
-st.markdown("**Try an example:**")
+st.markdown("**Example questions:**")
 col1, col2 = st.columns(2)
 
 example_clicked = None
@@ -339,27 +372,25 @@ st.markdown("---")
 query = st.text_input(
     "Enter your research question:",
     value=example_clicked if example_clicked else "",
-    placeholder="e.g., What is the interbehavioral field?",
-    label_visibility="visible"
+    placeholder="e.g., What is the interbehavioral field?"
 )
 
-# Search button
+# Search button centered
 col1, col2, col3 = st.columns([1, 1, 1])
 with col2:
     search_clicked = st.button("Search", use_container_width=True)
 
 if search_clicked or (query and example_clicked):
     if query:
-        with st.spinner("Searching Kantor's works..."):
+        with st.spinner("Searching..."):
             try:
-                # Generate query embedding
                 query_embedding = model.encode(query).tolist()
                 
-                # Build filter for Pinecone
+                # Build filter
                 pinecone_filter = None
                 if doc_type != "All Types":
                     pinecone_filter = {"type": {"$eq": doc_type}}
-                    if title_filter and not title_filter.startswith("All ") and title_filter != "Select a type first":
+                    if title_filter and not title_filter.startswith("All ") and title_filter != "Select type first":
                         pinecone_filter = {
                             "$and": [
                                 {"type": {"$eq": doc_type}},
@@ -367,7 +398,6 @@ if search_clicked or (query and example_clicked):
                             ]
                         }
                 
-                # Search Pinecone - 10 results with filter
                 results = index.query(
                     namespace="default",
                     vector=query_embedding,
@@ -376,7 +406,6 @@ if search_clicked or (query and example_clicked):
                     filter=pinecone_filter
                 )
                 
-                # Build context and sources list
                 context = ""
                 sources = []
                 source_references = ""
@@ -388,10 +417,7 @@ if search_clicked or (query and example_clicked):
                     page = match.metadata.get("page", "?")
                     doc_type_result = match.metadata.get("type", "")
                     
-                    # Build context with source markers
                     context += f"\n[Source {i}: {title}, p.{page}]\n{text}\n"
-                    
-                    # Build source reference list
                     source_references += f"- Source {i}: {title}, page {page}\n"
                     
                     sources.append({
@@ -404,7 +430,6 @@ if search_clicked or (query and example_clicked):
                         "text": text
                     })
                 
-                # Generate response
                 if context.strip():
                     response = groq_client.chat.completions.create(
                         model="llama-3.3-70b-versatile",
@@ -430,17 +455,11 @@ If the context doesn't contain relevant information, say so."""
                     
                     answer = response.choices[0].message.content
                     
-                    # Display answer
                     st.markdown("### Answer")
                     st.markdown(f'<div class="answer-box">{answer}</div>', unsafe_allow_html=True)
                     
-                    # Download/Copy buttons
-                    st.markdown("---")
-                    col_a, col_b, col_c = st.columns([1, 1, 2])
-                    
-                    # Prepare download content
+                    # Download button
                     download_text = f"""QUERY: {query}
-
 FILTERS: Type={doc_type}, Document={title_filter if title_filter else 'All'}
 
 ANSWER:
@@ -451,35 +470,26 @@ SOURCES:
                     for s in sources:
                         download_text += f"\n{'='*60}\nSource {s['num']}: [{s['type']}] {s['title']} — Page {s['page']}\nRelevance: {s['score']:.1%}\n{'='*60}\n{s['text']}\n"
                     
-                    with col_a:
-                        st.download_button(
-                            label="Download Results",
-                            data=download_text,
-                            file_name=f"kantor_search_{query[:30].replace(' ', '_')}.txt",
-                            mime="text/plain"
-                        )
-                    
-                    with col_b:
-                        if st.button("Copy Answer"):
-                            st.code(answer, language=None)
-                            st.caption("Select and copy the text above")
+                    st.download_button(
+                        label="📥 Download Results",
+                        data=download_text,
+                        file_name=f"kantor_search.txt",
+                        mime="text/plain"
+                    )
                     
                 else:
                     st.warning("No relevant documents found. Try adjusting your filters or query.")
                 
-                # Display sources with text preview
+                # Sources
                 if sources:
                     st.markdown("### Sources")
-                    st.caption("Click on each source to view the retrieved text")
-                    
                     for s in sources:
                         type_badge = f"[{s['type']}] " if s['type'] else ""
-                        with st.expander(f"Source {s['num']}: {type_badge}{s['title']} — Page {s['page']} ({s['score']:.1%})"):
+                        with st.expander(f"Source {s['num']}: {type_badge}{s['title']} — p.{s['page']} ({s['score']:.0%})"):
                             st.markdown(f'<div class="source-text">{s["text"]}</div>', unsafe_allow_html=True)
                     
             except Exception as e:
                 st.error(f"An error occurred: {str(e)}")
 
-# Footer info
-st.markdown("---")
-st.caption("Collection: 20 Books • 91 Articles • 21 Reviews • Years: 1915-1984")
+# Footer
+st.markdown('<p class="footer-caption">20 Books • 91 Articles • 21 Reviews • 1915–1984</p>', unsafe_allow_html=True)
