@@ -377,7 +377,7 @@ with search_col:
     )
 
 with btn_col:
-    search_clicked = st.button("🔍", help="Search", use_container_width=True)
+    search_clicked = st.button("⌕", help="Search", use_container_width=True)
 
 # Filters BELOW search
 st.markdown('<p class="filter-label">Filters (optional)</p>', unsafe_allow_html=True)
@@ -524,3 +524,4 @@ SOURCES:
 
 # Footer
 st.markdown('<p class="footer-caption">20 Books • 91 Articles • 21 Reviews • 1915–1984</p>', unsafe_allow_html=True)
+st.markdown('<p class="footer-caption"><a href="https://interbehavioral.com/contact/" target="_blank" style="color: #b8232f;">Provide feedback</a></p>', unsafe_allow_html=True)
