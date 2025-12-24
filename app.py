@@ -6,9 +6,102 @@ from sentence_transformers import SentenceTransformer
 # Page config
 st.set_page_config(
     page_title="J.R. Kantor Research System",
-    page_icon="📚",
+    page_icon="🔬",
     layout="wide"
 )
+
+# Custom CSS for professional look
+st.markdown("""
+<style>
+    /* Hide Streamlit branding */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    
+    /* Main container */
+    .main .block-container {
+        padding-top: 2rem;
+        max-width: 900px;
+    }
+    
+    /* Custom header */
+    .custom-header {
+        background: linear-gradient(135deg, #1a365d 0%, #2c5282 100%);
+        padding: 2rem;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+        color: white;
+        text-align: center;
+    }
+    
+    .custom-header h1 {
+        margin: 0;
+        font-size: 1.8rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+    
+    .custom-header p {
+        margin: 0.5rem 0 0 0;
+        opacity: 0.9;
+        font-size: 1rem;
+    }
+    
+    /* Search input styling */
+    .stTextInput > div > div > input {
+        border-radius: 8px;
+        border: 2px solid #e2e8f0;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+    }
+    
+    .stTextInput > div > div > input:focus {
+        border-color: #2c5282;
+        box-shadow: 0 0 0 3px rgba(44, 82, 130, 0.1);
+    }
+    
+    /* Button styling */
+    .stButton > button {
+        background: linear-gradient(135deg, #2c5282 0%, #1a365d 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0.6rem 2rem;
+        font-weight: 500;
+        font-size: 1rem;
+        transition: all 0.2s ease;
+    }
+    
+    .stButton > button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(26, 54, 93, 0.3);
+    }
+    
+    /* Answer section */
+    .answer-box {
+        background: #f8fafc;
+        border-left: 4px solid #2c5282;
+        padding: 1.5rem;
+        border-radius: 0 8px 8px 0;
+        margin: 1rem 0;
+    }
+    
+    /* Source expanders */
+    .streamlit-expanderHeader {
+        background: #f1f5f9;
+        border-radius: 6px;
+    }
+    
+    /* Sidebar */
+    .css-1d391kg {
+        background: #f8fafc;
+    }
+    
+    section[data-testid="stSidebar"] > div {
+        background: #f8fafc;
+    }
+</style>
+""", unsafe_allow_html=True)
 
 # Initialize clients
 @st.cache_resource
@@ -21,33 +114,61 @@ def init_clients():
 
 index, groq_client, model = init_clients()
 
-# Main UI
-st.title("📚 J.R. Kantor Research System")
-st.markdown("Search through Kantor's complete works on interbehavioral psychology")
+# Custom header
+st.markdown("""
+<div class="custom-header">
+    <h1>J.R. Kantor Research System</h1>
+    <p>Search through Kantor's complete works on interbehavioral psychology</p>
+</div>
+""", unsafe_allow_html=True)
 
 # Sidebar
 with st.sidebar:
     st.markdown("### About")
-    st.markdown("This system searches through J.R. Kantor's complete academic works on interbehavioral psychology.")
+    st.markdown("""
+    This research tool provides access to J.R. Kantor's 
+    complete academic bibliography on interbehavioral psychology.
+    """)
+    
+    st.markdown("---")
+    
     st.markdown("### Collection")
-    st.markdown("- 130 documents indexed")
-    st.markdown("- Books, articles, and reviews")
-    st.markdown("- Years: 1915-1984")
+    st.markdown("""
+    - **130** documents indexed  
+    - Books, articles, and reviews  
+    - **1915 - 1984**
+    """)
+    
+    st.markdown("---")
+    
+    st.markdown("### How to use")
+    st.markdown("""
+    1. Type your question below
+    2. Click **Search**
+    3. Review the AI-generated answer
+    4. Explore source documents
+    """)
 
 # Search input
 query = st.text_input(
-    "Ask a question about Kantor's work:",
-    placeholder="e.g., What is interbehavioral psychology?"
+    "Enter your research question:",
+    placeholder="e.g., What is the interbehavioral field?",
+    label_visibility="visible"
 )
 
-if st.button("🔍 Search", type="primary") or query:
+# Search button
+col1, col2, col3 = st.columns([1, 1, 1])
+with col2:
+    search_clicked = st.button("Search", use_container_width=True)
+
+if search_clicked or query:
     if query:
-        with st.spinner("Searching..."):
+        with st.spinner("Searching Kantor's works..."):
             try:
-                # Generate query embedding with HuggingFace
+                # Generate query embedding
                 query_embedding = model.encode(query).tolist()
                 
-                # Search Pinecone with vector
+                # Search Pinecone
                 results = index.query(
                     namespace="default",
                     vector=query_embedding,
@@ -68,7 +189,7 @@ if st.button("🔍 Search", type="primary") or query:
                         "score": match.score
                     })
                 
-                # Generate response only if we have context
+                # Generate response
                 if context.strip():
                     response = groq_client.chat.completions.create(
                         model="llama-3.3-70b-versatile",
@@ -87,19 +208,16 @@ if st.button("🔍 Search", type="primary") or query:
                     answer = response.choices[0].message.content
                     
                     st.markdown("### Answer")
-                    st.write(answer)
+                    st.markdown(f'<div class="answer-box">{answer}</div>', unsafe_allow_html=True)
                 else:
-                    st.markdown("### Answer")
-                    st.write("No relevant documents found in the index.")
+                    st.warning("No relevant documents found for this query.")
                 
                 # Display sources
-                st.markdown("### Sources")
                 if sources:
+                    st.markdown("### Sources")
                     for i, s in enumerate(sources, 1):
-                        with st.expander(f"{i}. {s['file']} (p. {s['page']})"):
-                            st.write(f"Relevance score: {s['score']:.3f}")
-                else:
-                    st.write("No sources found.")
+                        with st.expander(f"{i}. {s['file']} — Page {s['page']}"):
+                            st.caption(f"Relevance: {s['score']:.1%}")
                     
             except Exception as e:
-                st.error(f"Search error: {str(e)}")
+                st.error(f"An error occurred: {str(e)}")
