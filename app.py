@@ -132,6 +132,139 @@ def init_clients():
 
 index, groq_client, model = init_clients()
 
+# Document catalog - all titles per type
+DOCUMENT_CATALOG = {
+    "Books": [
+        "A Survey of the Science of Psyc - J. R. Kantor",
+        "An Objective Psychology of Gram - J. R. Kantor",
+        "An Outline of Social Psychology - J. R. Kantor",
+        "Interbehavioral Psychology - J. R. Kantor",
+        "Interbehavioral philosophy - J. R. Kantor",
+        "Linguistica Psicologica - J. R. Kantor",
+        "Principles of psychology Vol 1 - J. R. Kantor",
+        "Principles of psychology Vol 2 - J. R. Kantor",
+        "Psychological linguistics - J. R. Kantor",
+        "Psychology and Logic Vol 1 - J. R. Kantor",
+        "Psychology and Logic Vol 2 - J. R. Kantor",
+        "Sketch of J. R. Kantor's Psycho - J. R. Kantor",
+        "The Aim and Progress of Psychology and Other Sciences",
+        "The Scientific Evolution of Psy - J. R. Kantor",
+        "The Scientific Evolution of Psychology Vol II",
+        "The Scientific evolution of Psy - J. R. Kantor",
+        "The logic of modern science",
+        "Un esbozo de Psicologia Social - J. R. Kantor",
+        "kantor psicologia interconductu - J. R. Kantor",
+        "the science of psychology an interbehavioral survey",
+    ],
+    "Articles": [
+        "A functional interpretation of human instincts",
+        "A survey of the science of psychology",
+        "An Objective Interpretation of Meanings",
+        "An analysis of psychological language data",
+        "An analysis of the experimental analysis of behavior (TEAB)",
+        "An attempt toward a naturalistic description of emotions I",
+        "An attempt toward a naturalistic description of emotions II",
+        "An essay toward an institutional conception of social psychology",
+        "An objective analysis of volitional behavior",
+        "Anthropology, race, psychiatry, and culture",
+        "Association as a fundamental process of objective psychology",
+        "Axioms and their role in psychology",
+        "Behaviorism in the history of psychology",
+        "Behaviorism whose image",
+        "Behaviorism, behavior analysis, and the career of psychology",
+        "Can psychology contribute to the study of linguistics",
+        "Can the psychophysical experiment reconcile introspectionists and relativists",
+        "Character and personality. Their nature and interrelations",
+        "Cognition as events and as psychic constructions",
+        "Concerning Physical Analogies in Psychology",
+        "Conscious behavior and the abnormal",
+        "Cultural institutions and psychological institutions",
+        "Current trends in psychological theory",
+        "Die interbehavioristische Logik und die zeitgenössische Physik",
+        "Education in psychological perspective",
+        "Eppur si muove",
+        "Events and constructs in the science of psychology",
+        "Evolution and the science of psychology",
+        "Experimentation the ACME of science",
+        "Feelings and emotions as scientific events",
+        "History of psychology What benefits",
+        "History of science as scientific method",
+        "How do we acquire our basic reactions",
+        "How is a science of social psychology possible",
+        "Human Personality and its Pathology",
+        "In defense of stimulus-response psychology",
+        "In dispraise of indiscrimination",
+        "Innate intelligence Another genetic avatar",
+        "Intelligence and mental tests",
+        "Interbehavioral psychology and scientific analysis of data and operations",
+        "Interbehavioral psychology and the logic of science",
+        "James Mark Baldwin Columbia, S. C., 1861--Paris, France, 1934",
+        "La lingüística psicológica",
+        "Lest we forget",
+        "Man and machines in psychology Cybernetics and artificial intelligence",
+        "Manifesto of interbehavioral psychology",
+        "Newton's influence on the development of psychology",
+        "Objectivity and subjectivity in science and psychology",
+        "On reviewing psychological classics",
+        "Private data, raw feels, inner experience, and all that",
+        "Problems and paradoxes of physiological psychology",
+        "Psychological retardation and interbehavioral maladjustments",
+        "Psychology Science or nonscience",
+        "Psychology Scientific status-seeker",
+        "Psychology as a science of critical evaluation",
+        "Revivalism in psychology",
+        "Scientific psychology and specious philosophy",
+        "Scientific unity and spiritistic disunity",
+        "Suggestions toward a scientific interpretation of perception",
+        "Surrogation A process in psychological evolution",
+        "System structure and scientific psychology",
+        "The Ethics of Internationalism and the Individual",
+        "The Institutional Foundation of a Scientific Social Psychology",
+        "The Nervous System, Psychological Fact or Fiction",
+        "The Psychology of Reflex Action",
+        "The Significance of the Gestalt Conception in Psychology",
+        "The current situation in social psychology",
+        "The evolution of mind",
+        "The functional nature of the philosophical categories",
+        "The hereditarian manifesto (politics in psychology)",
+        "The integrative character of habits",
+        "The nature of psychology as a natural science",
+        "The operational principle in the physical and psychological sciences",
+        "The problem of instinct and its relation to social psychology",
+        "The psychology of feeling or affective reactions",
+        "The psychology of the ethically rational",
+        "The relation of scientists to events in physics and in psychology",
+        "The role of chemistry in the domain of psychology",
+        "Theological psychology vs. scientific psychology",
+        "Toward a scientific analysis of motivation",
+        "What meaning means in linguistics",
+        "reflections upon speech and language",
+    ],
+    "Reviews": [
+        "[Review of] Alexander, F.; Eisenstein, S.; & Grotjahn, M. (Eds.). Psychoanalytic pioneers",
+        "[Review of] Bentley, A. F. Inquiry into inquiries Essays in social theory",
+        "[Review of] Burloud, A. Principe d'une psychologie des tendances",
+        "[Review of] Dantzig, T. Aspects of science",
+        "[Review of] Eddington, S. A. The philosophy of physical science",
+        "[Review of] Gestalt Psychology A Survey of Facts and Principles",
+        "[Review of] Gray, L. H. Foundations of Language",
+        "[Review of] Hartshorne, C. The philosophy and psychology of sensation",
+        "[Review of] Holmes, R. W. The idealism of Giovanni Gentile",
+        "[Review of] Hunt, J. M. (Ed.). Personality and the behavior disorders",
+        "[Review of] Köhler, W. The place of value in the world of facts",
+        "[Review of] Langer, S. K. An introduction to symbolic logic",
+        "[Review of] Lucien Levy-Bruhl.Primitive Mentality",
+        "[Review of] Moore, T. V. Cognitive psychology",
+        "[Review of] Platt, J. R. (Ed.). New views of the nature of man",
+        "[Review of] Smith, T. V. Beyond conscience",
+        "[Review of] Thorndike, E. L. Man and his works",
+        "[Review of] Tolman, E. C. Drives toward war",
+        "[Review of] Watson, R. I. The great psychologists From Aristotle to Freud.",
+        "[Review of] What Man Has Made of Man",
+        "[Review of] Wood, L. The analysis of knowledge",
+    ],
+}
+
 # Image URL from GitHub
 IMAGE_URL = "https://raw.githubusercontent.com/jcampod/kantor-rag/main/kantor.png"
 
@@ -146,32 +279,44 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# Sidebar
+# Sidebar with filters
 with st.sidebar:
+    st.markdown("### 🔎 Filters")
+    
+    # Document type filter
+    doc_type = st.selectbox(
+        "Document Type",
+        ["All Types", "Books", "Articles", "Reviews"],
+        index=0
+    )
+    
+    # Title filter (dependent on type)
+    if doc_type != "All Types":
+        titles = sorted(DOCUMENT_CATALOG.get(doc_type, []))
+        title_filter = st.selectbox(
+            "Specific Document",
+            ["All " + doc_type] + titles,
+            index=0
+        )
+    else:
+        title_filter = None
+    
+    st.markdown("---")
+    
     st.markdown("### About")
     st.markdown("""
-    This research tool provides access to J.R. Kantor's 
-    complete academic bibliography on interbehavioral psychology.
+    Access J.R. Kantor's complete academic bibliography 
+    on interbehavioral psychology.
     """)
     
     st.markdown("---")
     
     st.markdown("### Collection")
     st.markdown("""
-    - **130** documents indexed  
-    - Books, articles, and reviews  
+    - **20** Books  
+    - **91** Articles
+    - **21** Reviews
     - **1915 - 1984**
-    """)
-    
-    st.markdown("---")
-    
-    st.markdown("### How to use")
-    st.markdown("""
-    1. Type your question below
-    2. Click **Search**
-    3. Review the AI-generated answer
-    4. Explore source documents
-    5. Download results if needed
     """)
 
 # Example questions
@@ -213,12 +358,25 @@ if search_clicked or (query and example_clicked):
                 # Generate query embedding
                 query_embedding = model.encode(query).tolist()
                 
-                # Search Pinecone - 10 results
+                # Build filter for Pinecone
+                pinecone_filter = None
+                if doc_type != "All Types":
+                    pinecone_filter = {"type": {"$eq": doc_type}}
+                    if title_filter and not title_filter.startswith("All "):
+                        pinecone_filter = {
+                            "$and": [
+                                {"type": {"$eq": doc_type}},
+                                {"title": {"$eq": title_filter}}
+                            ]
+                        }
+                
+                # Search Pinecone - 10 results with filter
                 results = index.query(
                     namespace="default",
                     vector=query_embedding,
                     top_k=10,
-                    include_metadata=True
+                    include_metadata=True,
+                    filter=pinecone_filter
                 )
                 
                 # Build context and sources list
@@ -231,7 +389,7 @@ if search_clicked or (query and example_clicked):
                     filename = match.metadata.get("filename", "Unknown")
                     title = match.metadata.get("title", filename)
                     page = match.metadata.get("page", "?")
-                    doc_type = match.metadata.get("type", "")
+                    doc_type_result = match.metadata.get("type", "")
                     
                     # Build context with source markers
                     context += f"\n[Source {i}: {title}, p.{page}]\n{text}\n"
@@ -243,7 +401,7 @@ if search_clicked or (query and example_clicked):
                         "num": i,
                         "file": filename,
                         "title": title,
-                        "type": doc_type,
+                        "type": doc_type_result,
                         "page": page,
                         "score": match.score,
                         "text": text
@@ -286,13 +444,15 @@ If the context doesn't contain relevant information, say so."""
                     # Prepare download content
                     download_text = f"""QUERY: {query}
 
+FILTERS: Type={doc_type}, Document={title_filter if title_filter else 'All'}
+
 ANSWER:
 {answer}
 
 SOURCES:
 """
                     for s in sources:
-                        download_text += f"\n{'='*60}\nSource {s['num']}: {s['title']} — Page {s['page']}\nType: {s['type']}\nRelevance: {s['score']:.1%}\n{'='*60}\n{s['text']}\n"
+                        download_text += f"\n{'='*60}\nSource {s['num']}: [{s['type']}] {s['title']} — Page {s['page']}\nRelevance: {s['score']:.1%}\n{'='*60}\n{s['text']}\n"
                     
                     with col_a:
                         st.download_button(
@@ -308,7 +468,7 @@ SOURCES:
                             st.caption("Select and copy the text above")
                     
                 else:
-                    st.warning("No relevant documents found for this query.")
+                    st.warning("No relevant documents found. Try adjusting your filters or query.")
                 
                 # Display sources with text preview
                 if sources:
