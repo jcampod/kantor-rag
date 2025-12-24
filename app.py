@@ -14,11 +14,16 @@ st.set_page_config(
 # Custom CSS - Professional academic design
 st.markdown("""
 <style>
-    /* Hide Streamlit branding */
+    /* Hide ALL Streamlit branding */
     #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
+    footer {visibility: hidden !important;}
     header {visibility: hidden;}
-    .stDeployButton {display: none;}
+    .stDeployButton {display: none !important;}
+    div[data-testid="stDecoration"] {display: none !important;}
+    div[data-testid="stStatusWidget"] {display: none !important;}
+    #stStreamlitLogo {display: none !important;}
+    .viewerBadge_container__r5tak {display: none !important;}
+    .styles_viewerBadge__CvC9N {display: none !important;}
     
     /* Main container - cleaner padding for embed */
     .block-container {
@@ -94,22 +99,24 @@ st.markdown("""
         box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
     }
     
-    /* Button styling - Professional black */
+    /* Button styling - WHITE text on dark background */
     .stButton > button {
-        background-color: #333333;
-        color: white;
-        border: none;
+        background-color: #333333 !important;
+        color: white !important;
+        border: none !important;
         border-radius: 4px;
         padding: 0.5rem 1.5rem;
         font-weight: 600;
         font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-        transition: background-color 0.2s ease;
     }
     
     .stButton > button:hover {
-        background-color: #555555;
-        color: white;
-        border: none;
+        background-color: #555555 !important;
+        color: white !important;
+    }
+    
+    .stButton > button p {
+        color: white !important;
     }
     
     /* Answer section */
@@ -156,6 +163,10 @@ st.markdown("""
         margin-top: 1rem;
         font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     }
+    
+    /* Hide Streamlit footer completely */
+    .reportview-container .main footer {visibility: hidden;}
+    div[data-testid="stToolbar"] {display: none;}
 </style>
 """, unsafe_allow_html=True)
 
@@ -349,94 +360,73 @@ with filter_col2:
 
 st.markdown("---")
 
-# Example questions
-st.markdown("**Example questions:**")
-col1, col2 = st.columns(2)
-
-example_clicked = None
-with col1:
-    if st.button("What is interbehavioral psychology?", key="ex1"):
-        example_clicked = "What is interbehavioral psychology?"
-    if st.button("How does Kantor define stimulus?", key="ex2"):
-        example_clicked = "How does Kantor define stimulus?"
-
-with col2:
-    if st.button("What is the interbehavioral field?", key="ex3"):
-        example_clicked = "What is the interbehavioral field?"
-    if st.button("Kantor's view on language", key="ex4"):
-        example_clicked = "What is Kantor's view on language?"
-
-st.markdown("---")
-
 # Search input
 query = st.text_input(
     "Enter your research question:",
-    value=example_clicked if example_clicked else "",
     placeholder="e.g., What is the interbehavioral field?"
 )
 
 # Search button centered
 col1, col2, col3 = st.columns([1, 1, 1])
 with col2:
-    search_clicked = st.button("Search", use_container_width=True)
+    search_clicked = st.button("🔍 Search", use_container_width=True)
 
-if search_clicked or (query and example_clicked):
-    if query:
-        with st.spinner("Searching..."):
-            try:
-                query_embedding = model.encode(query).tolist()
+if search_clicked and query:
+    with st.spinner("Searching..."):
+        try:
+            query_embedding = model.encode(query).tolist()
+            
+            # Build filter
+            pinecone_filter = None
+            if doc_type != "All Types":
+                pinecone_filter = {"type": {"$eq": doc_type}}
+                if title_filter and not title_filter.startswith("All ") and title_filter != "Select type first":
+                    pinecone_filter = {
+                        "$and": [
+                            {"type": {"$eq": doc_type}},
+                            {"title": {"$eq": title_filter}}
+                        ]
+                    }
+            
+            results = index.query(
+                namespace="default",
+                vector=query_embedding,
+                top_k=10,
+                include_metadata=True,
+                filter=pinecone_filter
+            )
+            
+            context = ""
+            sources = []
+            source_references = ""
+            
+            for i, match in enumerate(results.matches, 1):
+                text = match.metadata.get("text", "")
+                filename = match.metadata.get("filename", "Unknown")
+                title = match.metadata.get("title", filename)
+                page = match.metadata.get("page", "?")
+                doc_type_result = match.metadata.get("type", "")
                 
-                # Build filter
-                pinecone_filter = None
-                if doc_type != "All Types":
-                    pinecone_filter = {"type": {"$eq": doc_type}}
-                    if title_filter and not title_filter.startswith("All ") and title_filter != "Select type first":
-                        pinecone_filter = {
-                            "$and": [
-                                {"type": {"$eq": doc_type}},
-                                {"title": {"$eq": title_filter}}
-                            ]
-                        }
+                context += f"\n[Source {i}: {title}, p.{page}]\n{text}\n"
+                source_references += f"- Source {i}: {title}, page {page}\n"
                 
-                results = index.query(
-                    namespace="default",
-                    vector=query_embedding,
-                    top_k=10,
-                    include_metadata=True,
-                    filter=pinecone_filter
-                )
-                
-                context = ""
-                sources = []
-                source_references = ""
-                
-                for i, match in enumerate(results.matches, 1):
-                    text = match.metadata.get("text", "")
-                    filename = match.metadata.get("filename", "Unknown")
-                    title = match.metadata.get("title", filename)
-                    page = match.metadata.get("page", "?")
-                    doc_type_result = match.metadata.get("type", "")
-                    
-                    context += f"\n[Source {i}: {title}, p.{page}]\n{text}\n"
-                    source_references += f"- Source {i}: {title}, page {page}\n"
-                    
-                    sources.append({
-                        "num": i,
-                        "file": filename,
-                        "title": title,
-                        "type": doc_type_result,
-                        "page": page,
-                        "score": match.score,
-                        "text": text
-                    })
-                
-                if context.strip():
-                    response = groq_client.chat.completions.create(
-                        model="llama-3.3-70b-versatile",
-                        messages=[
-                            {
-                                "role": "system",
-                                "content": f"""You are a scholar specializing in J.R. Kantor's interbehavioral psychology. 
+                sources.append({
+                    "num": i,
+                    "file": filename,
+                    "title": title,
+                    "type": doc_type_result,
+                    "page": page,
+                    "score": match.score,
+                    "text": text
+                })
+            
+            if context.strip():
+                response = groq_client.chat.completions.create(
+                    model="llama-3.3-70b-versatile",
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": f"""You are a scholar specializing in J.R. Kantor's interbehavioral psychology. 
 Answer based ONLY on the provided context. 
 When citing, use the format [Source X] to reference specific sources.
 
@@ -445,21 +435,21 @@ Available sources:
 
 Always cite which source(s) your information comes from using [Source X] notation.
 If the context doesn't contain relevant information, say so."""
-                            },
-                            {
-                                "role": "user",
-                                "content": f"Context:\n{context}\n\nQuestion: {query}"
-                            }
-                        ]
-                    )
-                    
-                    answer = response.choices[0].message.content
-                    
-                    st.markdown("### Answer")
-                    st.markdown(f'<div class="answer-box">{answer}</div>', unsafe_allow_html=True)
-                    
-                    # Download button
-                    download_text = f"""QUERY: {query}
+                        },
+                        {
+                            "role": "user",
+                            "content": f"Context:\n{context}\n\nQuestion: {query}"
+                        }
+                    ]
+                )
+                
+                answer = response.choices[0].message.content
+                
+                st.markdown("### Answer")
+                st.markdown(f'<div class="answer-box">{answer}</div>', unsafe_allow_html=True)
+                
+                # Download button
+                download_text = f"""QUERY: {query}
 FILTERS: Type={doc_type}, Document={title_filter if title_filter else 'All'}
 
 ANSWER:
@@ -467,29 +457,29 @@ ANSWER:
 
 SOURCES:
 """
-                    for s in sources:
-                        download_text += f"\n{'='*60}\nSource {s['num']}: [{s['type']}] {s['title']} — Page {s['page']}\nRelevance: {s['score']:.1%}\n{'='*60}\n{s['text']}\n"
-                    
-                    st.download_button(
-                        label="📥 Download Results",
-                        data=download_text,
-                        file_name=f"kantor_search.txt",
-                        mime="text/plain"
-                    )
-                    
-                else:
-                    st.warning("No relevant documents found. Try adjusting your filters or query.")
+                for s in sources:
+                    download_text += f"\n{'='*60}\nSource {s['num']}: [{s['type']}] {s['title']} — Page {s['page']}\nRelevance: {s['score']:.1%}\n{'='*60}\n{s['text']}\n"
                 
-                # Sources
-                if sources:
-                    st.markdown("### Sources")
-                    for s in sources:
-                        type_badge = f"[{s['type']}] " if s['type'] else ""
-                        with st.expander(f"Source {s['num']}: {type_badge}{s['title']} — p.{s['page']} ({s['score']:.0%})"):
-                            st.markdown(f'<div class="source-text">{s["text"]}</div>', unsafe_allow_html=True)
-                    
-            except Exception as e:
-                st.error(f"An error occurred: {str(e)}")
+                st.download_button(
+                    label="📥 Download Results",
+                    data=download_text,
+                    file_name=f"kantor_search.txt",
+                    mime="text/plain"
+                )
+                
+            else:
+                st.warning("No relevant documents found. Try adjusting your filters or query.")
+            
+            # Sources
+            if sources:
+                st.markdown("### Sources")
+                for s in sources:
+                    type_badge = f"[{s['type']}] " if s['type'] else ""
+                    with st.expander(f"Source {s['num']}: {type_badge}{s['title']} — p.{s['page']} ({s['score']:.0%})"):
+                        st.markdown(f'<div class="source-text">{s["text"]}</div>', unsafe_allow_html=True)
+                
+        except Exception as e:
+            st.error(f"An error occurred: {str(e)}")
 
 # Footer
 st.markdown('<p class="footer-caption">20 Books • 91 Articles • 21 Reviews • 1915–1984</p>', unsafe_allow_html=True)
