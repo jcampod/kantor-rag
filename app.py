@@ -11,45 +11,49 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Custom CSS - Professional academic design
-st.markdown("""
+# Image URLs from GitHub
+IMAGE_URL = "https://raw.githubusercontent.com/jcampod/kantor-rag/main/kantor.png"
+SEARCH_ICON_URL = "https://raw.githubusercontent.com/jcampod/kantor-rag/main/search.png"
+
+# Custom CSS - Professional academic design with RED theme
+st.markdown(f"""
 <style>
     /* Hide ALL Streamlit branding */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden !important;}
-    header {visibility: hidden;}
-    .stDeployButton {display: none !important;}
-    div[data-testid="stDecoration"] {display: none !important;}
-    div[data-testid="stStatusWidget"] {display: none !important;}
-    #stStreamlitLogo {display: none !important;}
-    .viewerBadge_container__r5tak {display: none !important;}
-    .styles_viewerBadge__CvC9N {display: none !important;}
+    #MainMenu {{visibility: hidden;}}
+    footer {{visibility: hidden !important;}}
+    header {{visibility: hidden;}}
+    .stDeployButton {{display: none !important;}}
+    div[data-testid="stDecoration"] {{display: none !important;}}
+    div[data-testid="stStatusWidget"] {{display: none !important;}}
+    .viewerBadge_container__r5tak {{display: none !important;}}
+    .styles_viewerBadge__CvC9N {{display: none !important;}}
+    div[data-testid="stToolbar"] {{display: none;}}
     
-    /* Main container - cleaner padding for embed */
-    .block-container {
+    /* Main container */
+    .block-container {{
         padding-top: 1rem;
         padding-bottom: 1rem;
         padding-left: 2rem;
         padding-right: 2rem;
         max-width: 900px;
-    }
+    }}
     
     /* Academic Typography */
-    h1, h2, h3 {
+    h1, h2, h3 {{
         font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
         color: #111111;
         font-weight: 600;
-    }
+    }}
     
-    p, div, label, span {
+    p, div, label, span {{
         font-family: 'Georgia', serif;
         color: #333333;
         line-height: 1.6;
-    }
+    }}
     
-    /* Custom header with image on RIGHT */
-    .custom-header {
-        background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    /* Custom header with RED theme */
+    .custom-header {{
+        background: linear-gradient(135deg, #b8232f 0%, #8b1a23 100%);
         padding: 1.5rem 2rem;
         border-radius: 8px;
         margin-bottom: 1.5rem;
@@ -57,25 +61,25 @@ st.markdown("""
         display: flex;
         align-items: center;
         justify-content: space-between;
-    }
+    }}
     
-    .header-text h1 {
+    .header-text h1 {{
         margin: 0;
         font-size: 1.6rem;
         font-weight: 600;
         color: white;
         font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    }
+    }}
     
-    .header-text p {
+    .header-text p {{
         margin: 0.4rem 0 0 0;
-        opacity: 0.85;
+        opacity: 0.9;
         font-size: 0.95rem;
         color: white;
         font-family: 'Georgia', serif;
-    }
+    }}
     
-    .header-image {
+    .header-image {{
         width: 90px;
         height: 90px;
         border-radius: 50%;
@@ -83,55 +87,78 @@ st.markdown("""
         object-position: center top;
         border: 2px solid rgba(255,255,255,0.3);
         margin-left: 1.5rem;
-    }
+    }}
+    
+    /* Search box container */
+    .search-wrapper {{
+        position: relative;
+        margin-bottom: 1rem;
+    }}
     
     /* Search input styling */
-    .stTextInput > div > div > input {
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        padding: 0.6rem 1rem;
+    .stTextInput > div > div > input {{
+        border: 2px solid #ddd;
+        border-radius: 25px;
+        padding: 0.8rem 3.5rem 0.8rem 1.2rem;
         font-family: 'Georgia', serif;
         font-size: 1rem;
-    }
+        width: 100%;
+    }}
     
-    .stTextInput > div > div > input:focus {
-        border-color: #333;
-        box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
-    }
+    .stTextInput > div > div > input:focus {{
+        border-color: #b8232f;
+        box-shadow: 0 0 0 2px rgba(184, 35, 47, 0.15);
+    }}
     
-    /* Button styling - WHITE text on dark background */
-    .stButton > button {
-        background-color: #333333 !important;
+    /* Hide the search button column visually but keep functionality */
+    .search-btn-col button {{
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+    }}
+    
+    /* Button styling - RED theme */
+    .stButton > button {{
+        background-color: #b8232f !important;
         color: white !important;
         border: none !important;
-        border-radius: 4px;
-        padding: 0.5rem 1.5rem;
+        border-radius: 25px;
+        padding: 0.6rem 1.2rem;
         font-weight: 600;
         font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    }
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }}
     
-    .stButton > button:hover {
-        background-color: #555555 !important;
+    .stButton > button:hover {{
+        background-color: #8b1a23 !important;
         color: white !important;
-    }
+    }}
     
-    .stButton > button p {
+    .stButton > button p {{
         color: white !important;
-    }
+    }}
     
-    /* Answer section */
-    .answer-box {
+    /* Search icon inside button */
+    .search-icon-btn {{
+        width: 24px;
+        height: 24px;
+    }}
+    
+    /* Answer section with RED accent */
+    .answer-box {{
         background: #fafafa;
-        border-left: 3px solid #333;
+        border-left: 3px solid #b8232f;
         padding: 1.25rem;
         border-radius: 0 4px 4px 0;
         margin: 1rem 0;
         font-family: 'Georgia', serif;
         line-height: 1.7;
-    }
+    }}
     
     /* Source text preview */
-    .source-text {
+    .source-text {{
         background: #f8f9fa;
         border: 1px solid #e9ecef;
         border-radius: 4px;
@@ -142,31 +169,43 @@ st.markdown("""
         color: #333;
         max-height: 280px;
         overflow-y: auto;
-    }
+    }}
     
     /* Select boxes */
-    .stSelectbox > div > div {
+    .stSelectbox > div > div {{
         font-family: 'Georgia', serif;
-    }
+        border-radius: 4px;
+    }}
     
     /* Expander styling */
-    .streamlit-expanderHeader {
+    .streamlit-expanderHeader {{
         font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
         font-size: 0.95rem;
-    }
+    }}
     
     /* Footer caption */
-    .footer-caption {
+    .footer-caption {{
         text-align: center;
         color: #888;
         font-size: 0.85rem;
-        margin-top: 1rem;
+        margin-top: 1.5rem;
         font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    }
+    }}
     
-    /* Hide Streamlit footer completely */
-    .reportview-container .main footer {visibility: hidden;}
-    div[data-testid="stToolbar"] {display: none;}
+    /* Filter label */
+    .filter-label {{
+        font-size: 0.9rem;
+        color: #666;
+        margin-bottom: 0.3rem;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    }}
+    
+    /* Download button */
+    .stDownloadButton > button {{
+        background-color: #b8232f !important;
+        color: white !important;
+        border-radius: 4px;
+    }}
 </style>
 """, unsafe_allow_html=True)
 
@@ -314,10 +353,7 @@ DOCUMENT_CATALOG = {
     ],
 }
 
-# Image URL from GitHub
-IMAGE_URL = "https://raw.githubusercontent.com/jcampod/kantor-rag/main/kantor.png"
-
-# Custom header with image on RIGHT
+# Custom header with image on RIGHT - RED theme
 st.markdown(f"""
 <div class="custom-header">
     <div class="header-text">
@@ -328,8 +364,21 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# Filters
-st.markdown("**Filters** *(optional)*")
+# Search input with custom icon button
+search_col, btn_col = st.columns([8, 1])
+
+with search_col:
+    query = st.text_input(
+        "Search",
+        placeholder="Enter your research question...",
+        label_visibility="collapsed"
+    )
+
+with btn_col:
+    search_clicked = st.button("⌕", help="Search", use_container_width=True)
+
+# Filters BELOW search
+st.markdown('<p class="filter-label">Filters (optional)</p>', unsafe_allow_html=True)
 filter_col1, filter_col2 = st.columns(2)
 
 with filter_col1:
@@ -360,18 +409,8 @@ with filter_col2:
 
 st.markdown("---")
 
-# Search input
-query = st.text_input(
-    "Enter your research question:",
-    placeholder="e.g., What is the interbehavioral field?"
-)
-
-# Search button centered
-col1, col2, col3 = st.columns([1, 1, 1])
-with col2:
-    search_clicked = st.button("🔍 Search", use_container_width=True)
-
-if search_clicked and query:
+# Also trigger search on Enter key
+if (search_clicked or query) and query:
     with st.spinner("Searching..."):
         try:
             query_embedding = model.encode(query).tolist()
