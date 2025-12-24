@@ -2,6 +2,7 @@ import streamlit as st
 from pinecone import Pinecone
 from groq import Groq
 from sentence_transformers import SentenceTransformer
+import base64
 
 # Page config
 st.set_page_config(
@@ -10,7 +11,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Custom CSS for professional look
+# Custom CSS - BLACK color scheme
 st.markdown("""
 <style>
     /* Hide Streamlit branding */
@@ -24,24 +25,34 @@ st.markdown("""
         max-width: 950px;
     }
     
-    /* Custom header */
+    /* Custom header with image */
     .custom-header {
-        background: linear-gradient(135deg, #1a365d 0%, #2c5282 100%);
+        background: linear-gradient(135deg, #1a1a1a 0%, #333333 100%);
         padding: 2rem;
         border-radius: 10px;
         margin-bottom: 2rem;
         color: white;
-        text-align: center;
+        display: flex;
+        align-items: center;
+        gap: 2rem;
     }
     
-    .custom-header h1 {
+    .header-image {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid rgba(255,255,255,0.3);
+    }
+    
+    .header-text h1 {
         margin: 0;
         font-size: 1.8rem;
         font-weight: 600;
         letter-spacing: 0.5px;
     }
     
-    .custom-header p {
+    .header-text p {
         margin: 0.5rem 0 0 0;
         opacity: 0.9;
         font-size: 1rem;
@@ -56,13 +67,13 @@ st.markdown("""
     }
     
     .stTextInput > div > div > input:focus {
-        border-color: #2c5282;
-        box-shadow: 0 0 0 3px rgba(44, 82, 130, 0.1);
+        border-color: #333;
+        box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
     }
     
-    /* Button styling */
+    /* Button styling - BLACK */
     .stButton > button {
-        background: linear-gradient(135deg, #2c5282 0%, #1a365d 100%);
+        background: linear-gradient(135deg, #333333 0%, #1a1a1a 100%);
         color: white;
         border: none;
         border-radius: 8px;
@@ -74,13 +85,13 @@ st.markdown("""
     
     .stButton > button:hover {
         transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(26, 54, 93, 0.3);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     }
     
     /* Answer section */
     .answer-box {
         background: #f8fafc;
-        border-left: 4px solid #2c5282;
+        border-left: 4px solid #333;
         padding: 1.5rem;
         border-radius: 0 8px 8px 0;
         margin: 1rem 0;
@@ -102,8 +113,23 @@ st.markdown("""
     /* Source header */
     .source-header {
         font-weight: 600;
-        color: #1a365d;
+        color: #1a1a1a;
         margin-bottom: 0.5rem;
+    }
+    
+    /* Example questions */
+    .example-btn {
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .example-btn:hover {
+        background: #e2e8f0;
     }
     
     /* Sidebar */
@@ -124,13 +150,37 @@ def init_clients():
 
 index, groq_client, model = init_clients()
 
-# Custom header
-st.markdown("""
-<div class="custom-header">
-    <h1>J.R. Kantor Research System</h1>
-    <p>Search through Kantor's complete works on interbehavioral psychology</p>
-</div>
-""", unsafe_allow_html=True)
+# Load and encode image
+@st.cache_data
+def get_image_base64():
+    try:
+        with open("kantor.png", "rb") as f:
+            return base64.b64encode(f.read()).decode()
+    except:
+        return None
+
+img_base64 = get_image_base64()
+
+# Custom header with image
+if img_base64:
+    st.markdown(f"""
+    <div class="custom-header">
+        <img src="data:image/png;base64,{img_base64}" class="header-image">
+        <div class="header-text">
+            <h1>J.R. Kantor Research System</h1>
+            <p>Search through Kantor's complete works on interbehavioral psychology</p>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+else:
+    st.markdown("""
+    <div class="custom-header">
+        <div class="header-text">
+            <h1>J.R. Kantor Research System</h1>
+            <p>Search through Kantor's complete works on interbehavioral psychology</p>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
 # Sidebar
 with st.sidebar:
@@ -160,9 +210,29 @@ with st.sidebar:
     5. Download results if needed
     """)
 
+# Example questions
+st.markdown("**Try an example:**")
+col1, col2 = st.columns(2)
+
+example_clicked = None
+with col1:
+    if st.button("What is interbehavioral psychology?", key="ex1"):
+        example_clicked = "What is interbehavioral psychology?"
+    if st.button("How does Kantor define stimulus?", key="ex2"):
+        example_clicked = "How does Kantor define stimulus?"
+
+with col2:
+    if st.button("What is the interbehavioral field?", key="ex3"):
+        example_clicked = "What is the interbehavioral field?"
+    if st.button("Kantor's view on language", key="ex4"):
+        example_clicked = "What is Kantor's view on language?"
+
+st.markdown("---")
+
 # Search input
 query = st.text_input(
     "Enter your research question:",
+    value=example_clicked if example_clicked else "",
     placeholder="e.g., What is the interbehavioral field?",
     label_visibility="visible"
 )
@@ -172,14 +242,14 @@ col1, col2, col3 = st.columns([1, 1, 1])
 with col2:
     search_clicked = st.button("Search", use_container_width=True)
 
-if search_clicked or query:
+if search_clicked or (query and example_clicked):
     if query:
         with st.spinner("Searching Kantor's works..."):
             try:
                 # Generate query embedding
                 query_embedding = model.encode(query).tolist()
                 
-                # Search Pinecone - now 10 results
+                # Search Pinecone - 10 results
                 results = index.query(
                     namespace="default",
                     vector=query_embedding,
@@ -195,23 +265,27 @@ if search_clicked or query:
                 for i, match in enumerate(results.matches, 1):
                     text = match.metadata.get("text", "")
                     filename = match.metadata.get("filename", "Unknown")
+                    title = match.metadata.get("title", filename)
                     page = match.metadata.get("page", "?")
+                    doc_type = match.metadata.get("type", "")
                     
                     # Build context with source markers
-                    context += f"\n[Source {i}: {filename}, p.{page}]\n{text}\n"
+                    context += f"\n[Source {i}: {title}, p.{page}]\n{text}\n"
                     
                     # Build source reference list
-                    source_references += f"- Source {i}: {filename}, page {page}\n"
+                    source_references += f"- Source {i}: {title}, page {page}\n"
                     
                     sources.append({
                         "num": i,
                         "file": filename,
+                        "title": title,
+                        "type": doc_type,
                         "page": page,
                         "score": match.score,
                         "text": text
                     })
                 
-                # Generate response with explicit source references
+                # Generate response
                 if context.strip():
                     response = groq_client.chat.completions.create(
                         model="llama-3.3-70b-versatile",
@@ -237,11 +311,6 @@ If the context doesn't contain relevant information, say so."""
                     
                     answer = response.choices[0].message.content
                     
-                    # Store results for download
-                    st.session_state['last_query'] = query
-                    st.session_state['last_answer'] = answer
-                    st.session_state['last_sources'] = sources
-                    
                     # Display answer
                     st.markdown("### Answer")
                     st.markdown(f'<div class="answer-box">{answer}</div>', unsafe_allow_html=True)
@@ -259,7 +328,7 @@ ANSWER:
 SOURCES:
 """
                     for s in sources:
-                        download_text += f"\n{'='*60}\nSource {s['num']}: {s['file']} — Page {s['page']}\nRelevance: {s['score']:.1%}\n{'='*60}\n{s['text']}\n"
+                        download_text += f"\n{'='*60}\nSource {s['num']}: {s['title']} — Page {s['page']}\nType: {s['type']}\nRelevance: {s['score']:.1%}\n{'='*60}\n{s['text']}\n"
                     
                     with col_a:
                         st.download_button(
@@ -283,7 +352,8 @@ SOURCES:
                     st.caption("Click on each source to view the retrieved text")
                     
                     for s in sources:
-                        with st.expander(f"Source {s['num']}: {s['file']} — Page {s['page']} ({s['score']:.1%} relevance)"):
+                        type_badge = f"[{s['type']}] " if s['type'] else ""
+                        with st.expander(f"Source {s['num']}: {type_badge}{s['title']} — Page {s['page']} ({s['score']:.1%})"):
                             st.markdown(f'<div class="source-text">{s["text"]}</div>', unsafe_allow_html=True)
                     
             except Exception as e:
