@@ -2,6 +2,7 @@ import streamlit as st
 from pinecone import Pinecone
 from groq import Groq
 from sentence_transformers import SentenceTransformer
+from collections import defaultdict
 
 # Page config
 st.set_page_config(
@@ -222,6 +223,27 @@ def init_clients():
 
 index, groq_client, model = init_clients()
 
+
+def diversify_results(matches, max_per_source=2):
+    """
+    Limit results to max N chunks per source document.
+    Keeps the highest-scoring chunks from each source.
+    Results are already sorted by score (highest first) from Pinecone.
+    """
+    source_counts = defaultdict(int)
+    diversified = []
+    
+    for match in matches:
+        # Use 'title' as the source identifier (groups all pages from same document)
+        source = match.metadata.get('title', match.metadata.get('filename', 'Unknown'))
+        
+        if source_counts[source] < max_per_source:
+            diversified.append(match)
+            source_counts[source] += 1
+    
+    return diversified
+
+
 # Document catalog
 DOCUMENT_CATALOG = {
     "Books": [
@@ -429,19 +451,26 @@ if (search_clicked or query) and query:
                         ]
                     }
             
+            # Query more results initially to allow for diversification
             results = index.query(
                 namespace="default",
                 vector=query_embedding,
-                top_k=10,
+                top_k=25,  # Fetch more to have enough after diversification
                 include_metadata=True,
                 filter=pinecone_filter
             )
+            
+            # Apply source diversification: max 2 chunks per document
+            diversified_matches = diversify_results(results.matches, max_per_source=2)
+            
+            # Limit to top 10 after diversification
+            diversified_matches = diversified_matches[:10]
             
             context = ""
             sources = []
             source_references = ""
             
-            for i, match in enumerate(results.matches, 1):
+            for i, match in enumerate(diversified_matches, 1):
                 text = match.metadata.get("text", "")
                 filename = match.metadata.get("filename", "Unknown")
                 title = match.metadata.get("title", filename)
