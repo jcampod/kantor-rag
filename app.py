@@ -89,43 +89,50 @@ st.markdown(f"""
         margin-left: 1.5rem;
     }}
     
-    /* Search input styling - WHITE background */
+    /* Search input styling - RED border */
     .stTextInput > div > div > input {{
-        border: 2px solid #ddd;
+        border: 2px solid #b8232f !important;
         border-radius: 25px;
         padding: 0.8rem 1.2rem;
         font-family: 'Georgia', serif;
         font-size: 1rem;
         width: 100%;
         background-color: #ffffff !important;
+        outline: none !important;
+        box-shadow: none !important;
     }}
     
     .stTextInput > div > div {{
         background-color: transparent !important;
+        border: none !important;
     }}
     
     .stTextInput > div {{
         background-color: transparent !important;
+        border: none !important;
     }}
     
     .stTextInput > div > div > input:focus {{
-        border-color: #b8232f;
-        box-shadow: 0 0 0 2px rgba(184, 35, 47, 0.15);
+        border-color: #b8232f !important;
+        box-shadow: none !important;
+        outline: none !important;
         background-color: #ffffff !important;
     }}
     
-    /* Button styling - RED theme */
+    /* Button styling - RED background, bigger */
     .stButton > button {{
         background-color: #b8232f !important;
         color: white !important;
         border: none !important;
         border-radius: 25px;
-        padding: 0.6rem 1.2rem;
+        padding: 0.85rem 1.4rem !important;
         font-weight: 600;
+        font-size: 1.4rem !important;
         font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
         display: flex;
         align-items: center;
         justify-content: center;
+        min-height: 52px !important;
     }}
     
     .stButton > button:hover {{
@@ -135,6 +142,7 @@ st.markdown(f"""
     
     .stButton > button p {{
         color: white !important;
+        font-size: 1.4rem !important;
     }}
     
     /* Answer section with RED accent */
