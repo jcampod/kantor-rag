@@ -139,7 +139,7 @@ st.markdown(f"""
         background-color: #ffffff !important;
     }}
     
-  /* Button styling - RED background with white icon */
+    /* Button styling - RED background with white icon */
     .stButton > button {{
         background-color: #b8232f !important;
         color: white !important;
@@ -147,13 +147,13 @@ st.markdown(f"""
         border-radius: 12px !important;
         padding: 0.5rem 1rem !important;
         font-weight: 400;
-        font-size: 2rem !important;
+        font-size: 3rem !important;
         font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
         display: flex;
         align-items: center;
         justify-content: center;
-        min-height: 52px !important;
-        min-width: 60px !important;
+        min-height: 58px !important;
+        min-width: 68px !important;
     }}
     
     .stButton > button:hover {{
@@ -162,14 +162,14 @@ st.markdown(f"""
     
     .stButton > button p {{
         color: white !important;
-        font-size: 2rem !important;
+        font-size: 3rem !important;
         margin: 0 !important;
         padding: 0 !important;
     }}
     
     .stButton > button span {{
         color: white !important;
-        font-size: 2rem !important;
+        font-size: 3rem !important;
     }}
     
     /* Answer section with RED accent */
@@ -435,7 +435,7 @@ with search_col:
     )
 
 with btn_col:
-    search_clicked = st.button("🔎", help="Search", use_container_width=True)
+    search_clicked = st.button("⌕", help="Search", use_container_width=True)
 
 # Filters BELOW search
 st.markdown('<p class="filter-label">Filters (optional)</p>', unsafe_allow_html=True)
