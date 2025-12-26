@@ -248,15 +248,22 @@ DOCUMENT_CATALOG = {
     "Books": [
         "1959.Interbehavioral Psychology - J. R. Kantor",
         "A Survey of the Science of Psyc - J. R. Kantor",
+        "An Objective Psychology of Gram - J. R. Kantor",
         "An Outline of Social Psychology - J. R. Kantor",
         "Interbehavioral philosophy - J. R. Kantor",
+        "Linguistica Psicologica - J. R. Kantor",
         "Principles of psychology Vol 1 - J. R. Kantor",
         "Principles of psychology Vol 2 - J. R. Kantor",
+        "Psychological linguistics - J. R. Kantor",
         "Psychology and Logic Vol 1 - J. R. Kantor",
         "Psychology and Logic Vol 2 - J. R. Kantor",
+        "Sketch of J. R. Kantor's Psycho - J. R. Kantor",
         "The Aim and Progress of Psychology and Other Sciences",
         "The Scientific Evolution of Psychology Vol II",
         "The Scientific evolution of Psy - J. R. Kantor",
+        "The logic of modern science",
+        "Un esbozo de Psicologia Social - J. R. Kantor",
+        "kantor psicologia interconductu - J. R. Kantor",
         "the science of psychology an interbehavioral survey",
     ],
     "Articles": [
@@ -276,6 +283,7 @@ DOCUMENT_CATALOG = {
         "1921_An attempt toward a naturalistic description of emotions II",
         "1921_Association as a fundamental process of objective psychology",
         "1921_How do we acquire our basic reactions",
+        "1922 - American Journal of Sociology - Kantor - An Essay Toward an Institutional Conception of Social Psychology",
         "1922 Can the psychophysical experiment reconcile introspectionists and relativists",
         "1922_An analysis of psychological language data",
         "1922_An essay toward an institutional conception of social psychology",
@@ -290,7 +298,7 @@ DOCUMENT_CATALOG = {
         "1925_Anthropology, race, psychiatry, and culture",
         "1925_The Significance of the Gestalt Conception in Psychology",
         "1928 Can psychology contribute to the study of linguistics",
-        "1933_A survey of the science of psychology",
+        "1931_Contributions of the Laboratory of Psychology and Biology - Book review",
         "1933_In defense of stimulus-response psychology",
         "1935_James Mark Baldwin Columbia, S. C., 1861--Paris, France, 1934",
         "1935_The evolution of mind",
@@ -321,6 +329,7 @@ DOCUMENT_CATALOG = {
         "1974_Eppur si muove",
         "1974_Lest we forget",
         "1974_The role of chemistry in the domain of psychology",
+        "1974_[errata]Eppur Si muove",
         "1975 La lingüística psicológica",
         "1975_Education in psychological perspective",
         "1975_In dispraise of indiscrimination",
@@ -332,6 +341,7 @@ DOCUMENT_CATALOG = {
         "1978_Cognition as events and as psychic constructions",
         "1978_Man and machines in psychology Cybernetics and artificial intelligence",
         "1979_Psychology Science or nonscience",
+        "1980 Manifiesto de la psicologia int - J. R. Kantor",
         "1980_Manifesto of interbehavioral psychology",
         "1980_Theological psychology vs. scientific psychology",
         "1981 Axioms and their role in psychology",
@@ -340,15 +350,18 @@ DOCUMENT_CATALOG = {
         "1981_Surrogation A process in psychological evolution",
         "1982 Objectivity and subjectivity in science and psychology",
         "1982_Psychological retardation and interbehavioral maladjustments",
+        "1983 Explanation psychological natur - J. R. Kantor",
         "1984_Scientific unity and spiritistic disunity",
         "1984_The relation of scientists to events in physics and in psychology",
     ],
     "Reviews": [
         "1925_[Review of] Lucien Levy-Bruhl.Primitive Mentality",
+        "1934_[Review of] Hartshorne, C. The philosophy and psychology of sensation",
         "1936_[Review of] Gestalt Psychology A Survey of Facts and Principles",
         "1937_[Review of] Holmes, R. W. The idealism of Giovanni Gentile",
         "1937_[Review of] Langer, S. K. An introduction to symbolic logic",
         "1938_[Review of] Burloud, A. Principe d'une psychologie des tendances",
+        "1938_[Review of] Dantzig, T. Aspects of science",
         "1938_[Review of] Köhler, W. The place of value in the world of facts",
         "1939_[Review of] Gray, L. H. Foundations of Language",
         "1939_[Review of] Moore, T. V. Cognitive psychology",
@@ -364,6 +377,7 @@ DOCUMENT_CATALOG = {
         "1968_[Review of] Watson, R. I. The great psychologists From Aristotle to Freud.",
     ],
 }
+
 # Custom header with image on RIGHT - RED theme
 st.markdown(f"""
 <div class="custom-header">
@@ -462,20 +476,21 @@ if (search_clicked or query) and query:
                 filename = match.metadata.get("filename", "Unknown")
                 page = match.metadata.get("page", "?")
                 doc_type_result = match.metadata.get("doc_type", "")
+                year = match.metadata.get("year", 0)
                 
                 context += f"\n[Source {i}: {filename}, p.{page}]\n{text}\n"
                 source_references += f"- Source {i}: {filename}, page {page}\n"
                 
                 sources.append({
-    "num": i,
-    "file": filename,
-    "title": filename,
-    "type": doc_type_result,
-    "page": page,
-    "year": match.metadata.get("year", 0),
-    "score": match.score,
-    "text": text
-})
+                    "num": i,
+                    "file": filename,
+                    "title": filename,
+                    "type": doc_type_result,
+                    "page": page,
+                    "year": year,
+                    "score": match.score,
+                    "text": text
+                })
             
             if context.strip():
                 response = groq_client.chat.completions.create(
@@ -515,7 +530,7 @@ ANSWER:
 SOURCES:
 """
                 for s in sources:
-                    download_text += f"\n{'='*60}\nSource {s['num']}: [{s['type']}] {s['title']} — Page {s['page']}\nRelevance: {s['score']:.1%}\n{'='*60}\n{s['text']}\n"
+                    download_text += f"\n{'='*60}\nSource {s['num']}: [{s['type']}] ({s['year']}) {s['title']} — Page {s['page']}\nRelevance: {s['score']:.1%}\n{'='*60}\n{s['text']}\n"
                 
                 st.download_button(
                     label="📥 Download Results",
@@ -533,12 +548,12 @@ SOURCES:
                 for s in sources:
                     type_badge = f"[{s['type']}] " if s['type'] else ""
                     year_badge = f"({s['year']}) " if s.get('year') else ""
-with st.expander(f"Source {s['num']}: {type_badge}{year_badge}{s['title']} — p.{s['page']} ({s['score']:.0%})"):
+                    with st.expander(f"Source {s['num']}: {type_badge}{year_badge}{s['title']} — p.{s['page']} ({s['score']:.0%})"):
                         st.markdown(f'<div class="source-text">{s["text"]}</div>', unsafe_allow_html=True)
                 
         except Exception as e:
             st.error(f"An error occurred: {str(e)}")
 
 # Footer
-st.markdown('<p class="footer-caption">20 Books • 91 Articles • 21 Reviews • 1915–1984</p>', unsafe_allow_html=True)
+st.markdown('<p class="footer-caption">19 Books • 91 Articles • 21 Reviews • 1915–1984</p>', unsafe_allow_html=True)
 st.markdown('<p class="footer-caption"><a href="https://interbehavioral.com/contact/" target="_blank" style="color: #b8232f;">Provide feedback</a></p>', unsafe_allow_html=True)
