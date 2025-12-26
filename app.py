@@ -30,12 +30,32 @@ st.markdown(f"""
     div[data-testid="stToolbar"] {{display: none;}}
     
     /* Main container */
+    /* Reduce bottom padding */
     .block-container {{
         padding-top: 1rem;
-        padding-bottom: 1rem;
+        padding-bottom: 0rem !important;
         padding-left: 2rem;
         padding-right: 2rem;
         max-width: 900px;
+    }}
+    
+    /* Remove extra space at bottom */
+    .main .block-container {{
+        padding-bottom: 0rem !important;
+        margin-bottom: 0rem !important;
+    }}
+    
+    footer {{
+        visibility: hidden !important;
+        height: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }}
+    
+    /* Reduce iframe/app height padding */
+    .stApp {{
+        margin-bottom: 0 !important;
+        padding-bottom: 0 !important;
     }}
     
     /* Academic Typography */
