@@ -119,31 +119,37 @@ st.markdown(f"""
         background-color: #ffffff !important;
     }}
     
-   /* Button styling - RED background with white icon */
+  /* Button styling - RED background with white icon */
     .stButton > button {{
         background-color: #b8232f !important;
         color: white !important;
         border: none !important;
         border-radius: 12px !important;
-        padding: 0.7rem 1.2rem !important;
+        padding: 0.5rem 1rem !important;
         font-weight: 400;
-        font-size: 1.5rem !important;
+        font-size: 2rem !important;
         font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
         display: flex;
         align-items: center;
         justify-content: center;
         min-height: 52px !important;
-        min-width: 52px !important;
+        min-width: 60px !important;
     }}
     
     .stButton > button:hover {{
         background-color: #8b1a23 !important;
-        color: white !important;
     }}
     
     .stButton > button p {{
         color: white !important;
-        font-size: 1.5rem !important;
+        font-size: 2rem !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }}
+    
+    .stButton > button span {{
+        color: white !important;
+        font-size: 2rem !important;
     }}
     
     /* Answer section with RED accent */
