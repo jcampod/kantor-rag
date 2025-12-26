@@ -234,8 +234,7 @@ def diversify_results(matches, max_per_source=2):
     diversified = []
     
     for match in matches:
-        # Use 'title' as the source identifier (groups all pages from same document)
-        source = match.metadata.get('title', match.metadata.get('filename', 'Unknown'))
+        source = match.metadata.get('filename', 'Unknown')
         
         if source_counts[source] < max_per_source:
             diversified.append(match)
@@ -442,20 +441,20 @@ if (search_clicked or query) and query:
             # Build filter
             pinecone_filter = None
             if doc_type != "All Types":
-                pinecone_filter = {"type": {"$eq": doc_type}}
+                pinecone_filter = {"doc_type": {"$eq": doc_type}}
                 if title_filter and not title_filter.startswith("All ") and title_filter != "Select type first":
                     pinecone_filter = {
                         "$and": [
-                            {"type": {"$eq": doc_type}},
-                            {"title": {"$eq": title_filter}}
+                            {"doc_type": {"$eq": doc_type}},
+                            {"filename": {"$eq": title_filter}}
                         ]
                     }
             
             # Query more results initially to allow for diversification
             results = index.query(
-                namespace="default",
+                namespace="",
                 vector=query_embedding,
-                top_k=25,  # Fetch more to have enough after diversification
+                top_k=25,
                 include_metadata=True,
                 filter=pinecone_filter
             )
@@ -473,17 +472,16 @@ if (search_clicked or query) and query:
             for i, match in enumerate(diversified_matches, 1):
                 text = match.metadata.get("text", "")
                 filename = match.metadata.get("filename", "Unknown")
-                title = match.metadata.get("title", filename)
                 page = match.metadata.get("page", "?")
-                doc_type_result = match.metadata.get("type", "")
+                doc_type_result = match.metadata.get("doc_type", "")
                 
-                context += f"\n[Source {i}: {title}, p.{page}]\n{text}\n"
-                source_references += f"- Source {i}: {title}, page {page}\n"
+                context += f"\n[Source {i}: {filename}, p.{page}]\n{text}\n"
+                source_references += f"- Source {i}: {filename}, page {page}\n"
                 
                 sources.append({
                     "num": i,
                     "file": filename,
-                    "title": title,
+                    "title": filename,
                     "type": doc_type_result,
                     "page": page,
                     "score": match.score,
