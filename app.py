@@ -467,14 +467,15 @@ if (search_clicked or query) and query:
                 source_references += f"- Source {i}: {filename}, page {page}\n"
                 
                 sources.append({
-                    "num": i,
-                    "file": filename,
-                    "title": filename,
-                    "type": doc_type_result,
-                    "page": page,
-                    "score": match.score,
-                    "text": text
-                })
+    "num": i,
+    "file": filename,
+    "title": filename,
+    "type": doc_type_result,
+    "page": page,
+    "year": match.metadata.get("year", 0),
+    "score": match.score,
+    "text": text
+})
             
             if context.strip():
                 response = groq_client.chat.completions.create(
@@ -531,7 +532,8 @@ SOURCES:
                 st.markdown("### Sources")
                 for s in sources:
                     type_badge = f"[{s['type']}] " if s['type'] else ""
-                    with st.expander(f"Source {s['num']}: {type_badge}{s['title']} — p.{s['page']} ({s['score']:.0%})"):
+                    year_badge = f"({s['year']}) " if s.get('year') else ""
+with st.expander(f"Source {s['num']}: {type_badge}{year_badge}{s['title']} — p.{s['page']} ({s['score']:.0%})"):
                         st.markdown(f'<div class="source-text">{s["text"]}</div>', unsafe_allow_html=True)
                 
         except Exception as e:
